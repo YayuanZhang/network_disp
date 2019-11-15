@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8" />
+	    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+		<title>水下移动组网示例</title>
+		<link rel="stylesheet" href="/static/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="/static/css/app.css" />
+	</head>
+	
+	<body class="bg06">
+		<header class="header">
+			<h3>水下移动组网示例</h3>
+		</header>
+		
+		<div class="wrapper">
+			<div class="container-fluid">
+				<div class="row fill-h">
+					<div class="col-lg-3 fill-h">
+						<div class="xpanel-wrapper xpanel-wrapper-1-2">
+							<div class="xpanel">
+								<div class="fill-h" id="wordChart"></div>
+							</div>
+						</div>
+						<div class="xpanel-wrapper xpanel-wrapper-1-2">
+							<div class="xpanel">
+								<div class="fill-h" id="ballChart"></div>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-6 fill-h">
+						<div class="xpanel-wrapper xpanel-wrapper-1">
+							<div class="xpanel no-padding no-bg">
+								<div class="fill-h" id="fireworksChart"></div>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-3 fill-h">
+						<div class="xpanel-wrapper xpanel-wrapper-2-3">
+							<div class="xpanel">
+								<div class="fill-h" id="relationChart"></div>
+							</div>
+						</div>
+						<div class="xpanel-wrapper xpanel-wrapper-1-3">
+							<div class="xpanel">
+								<div class="fill-h" id="mapChart"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<script type="text/javascript" src="/static/js/jquery-3.3.1.min.js"></script>
+		<script type="text/javascript" src="/static/js/echarts.min.js"></script>
+		<script type="text/javascript" src="/static/js/echarts-wordcloud.min.js"></script>
+		<script type="text/javascript" src="/static/js/echarts-map-china.js"></script> 
+		<script type="text/javascript">
+			$(function() {
+				/*************** 中国地图 **************/
+				//初始化echarts实例
+				const mapChart = echarts.init(document.getElementById("mapChart"));
+			(function() {
+					let data = [
+						{"name": "辽宁", "value": 77},
+						{"name": "吉林", "value": 42},
+						{"name": "黑龙江", "value": 72},
+						{"name": "四川", "value": 81},
+						{"name": "湖北", "value": 47},
+						{"name": "福建", "value": 67},
+						{"name": "深圳", "value": 82},
+						{"name": "广东", "value": 66},
+						{"name": "重庆", "value": 24},
+						{"name": "湖南", "value": 92},
+						{"name": "上海", "value": 95},
+						{"name": "江苏", "value": 91},
+						{"name": "浙江", "value": 94},
+						{"name": "安徽", "value": 64},
+						{"name": "北京", "value": 91},
+						{"name": "天津", "value": 65},
+						{"name": "山东", "value": 98},
+						{"name": "山西", "value": 83},
+						{"name": "河南", "value": 100},
+						{"name": "河北", "value": 70},
+						{"name": "内蒙古", "value": 11},
+						{"name": "江西", "value": 23},
+						{"name": "贵州", "value": 45},
+						{"name": "云南", "value": 36},
+						{"name": "西藏", "value": 9},
+						{"name": "陕西", "value": 21},
+						{"name": "甘肃", "value": 54},
+						{"name": "青海", "value": 48},
+						{"name": "宁夏", "value": 36},
+						{"name": "新疆", "value": 24},
+						{"name": "广西", "value": 68},
+						{"name": "海南", "value": 99},
+						{"name": "台湾", "value": 88}
+					];
+					
+					let opt = {
+						visualMap: {
+					        show: false,
+					        orient: 'horizontal',
+					        left: 'left',
+					        top: 'top',
+					        itemWidth: 5,
+					        calculable: true,
+					        seriesIndex: [0],
+					        inRange: {
+					            color: ['#aed8fe', '#57a1fc', '#3a73b8', '#2B32B2']
+					        }
+					    },
+						geo: {
+							map: 'china',
+					        roam: false, //开启鼠标缩放和漫游
+					        zoom: 1, //地图缩放级别
+							selectedMode: false, //选中模式：single | multiple
+							left: 0,
+							right: 0,
+							top: 0,
+							bottom: 0,
+							layoutCenter: ['50%', '50%'], //设置后left/right/top/bottom等属性无效
+							//layoutSize: '100%', //保持地图宽高比
+					        label: {
+					            emphasis: {
+					                show: true,
+					                textStyle: {
+					                	fontSize: 10,
+					                	color: '#fff'
+					                }
+					            }
+					        }
+						},
+						series: [{
+							type: 'map',
+							geoIndex: 0,
+							data: data
+						}]
+					};
+					mapChart.setOption(opt);
+				})();
+
+			/*************** 关系图 **************/
+				//初始化echarts实例
+				const relationChart = echarts.init(document.getElementById("relationChart"));
+				const relationOpt = {
+				    animationDurationUpdate: 1500,
+				    animationEasingUpdate: 'quinticInOut',
+				    label: {
+				        normal: {
+				            show: true,
+				            textStyle: {
+				                fontSize: 12
+				            }
+				        }
+				    },
+				    series: [{
+			            type: 'graph',
+			            symbolSize: 45,
+			            focusNodeAdjacency: true,
+			            roam: true,
+			            layout: 'force',
+			            force: {
+			                repulsion: 320 //斥力因子，值越大，斥力越大
+			            },
+			            label: {
+			                normal: {
+			                    show: true,
+			                    textStyle: {
+			                        fontSize: 12
+			                    },
+			                }
+			            },
+			            edgeSymbolSize: [4, 50],
+			            edgeLabel: {
+			                normal: {
+			                    show: true,
+			                    textStyle: {
+			                        fontSize: 10
+			                    },
+			                    formatter: "{c}"
+			                }
+			            },
+			            categories: [{
+			            	name: '全栈',
+			            	itemStyle: {
+			            		normal: {
+			            			color: '#f2637b'
+			            		}
+			            	}
+			            }, {
+			                name: '前端',
+			                itemStyle: {
+			                    normal: {
+			                        color: "#eaa674",
+			                    }
+			                }
+			            }, {
+			                name: '移动端',
+			                itemStyle: {
+			                    normal: {
+			                        color: "#3aa1ff",
+			                    }
+			                }
+			            }, {
+			                name: '服务端',
+			                itemStyle: {
+			                    normal: {
+			                        color: "#4ecb73",
+			                    }
+			                }
+			            }],
+			            data: [{
+			            	name: '全栈',
+			            	category: 0,
+			            	draggable: true
+			            }, {
+			            	name: '前端',
+			            	category: 1,
+			            	draggable: true
+			            }, {
+			            	name: '移动端',
+			            	category: 2,
+			            	draggable: true
+			            }, {
+			            	name: '服务端',
+			            	category: 3,
+			            	draggable: true
+			            }, {
+			                name: 'HTML',
+			                category: 1,
+			                draggable: true,
+			            }, {
+			                name: 'CSS',
+			                category: 1,
+			                draggable: true,
+			            }, {
+			                name: 'JavaScript',
+			                category: 1,
+			                draggable: true,
+			            }, {
+			                name: 'TypeScript',
+			                category: 1,
+			                draggable: true,
+			            }, {
+			                name: 'Java',
+			                category: 3,
+			                draggable: true,
+			            }, {
+			                name: 'PHP',
+			                category: 3,
+			                draggable: true,
+			            }, {
+			                name: 'Python',
+			                category: 3,
+			                draggable: true,
+			            }, {
+			                name: 'Andriod',
+			                category: 2,
+			                draggable: true,
+			            }, {
+			                name: 'Object-C',
+			                category: 2,
+			                draggable: true,
+			            }, {
+			                name: 'Swift',
+			                category: 2,
+			                draggable: true,
+			            }],
+			            links: [{
+			            	source: 0,
+			                target: 1,
+			                value: ''
+			            }, {
+			            	source: 0,
+			                target: 2,
+			                value: ''
+			            }, {
+			            	source: 0,
+			                target: 3,
+			                value: ''
+			            }, {
+			                source: 1,
+			                target: 4,
+			                value: ''
+			            }, {
+			            	source: 1,
+			                target: 5,
+			                value: ''
+			            }, {
+			            	source: 1,
+			                target: 6,
+			                value: ''
+			            }, {
+			            	source: 1,
+			                target: 7,
+			                value: ''
+			            }, {
+			                source: 6,
+			                target: 7,
+			                value: '超集'
+			            }, {
+			            	source: 3,
+			                target: 8,
+			                value: ''
+			            }, {
+			            	source: 3,
+			                target: 9,
+			                value: ''
+			            }, {
+			            	source: 3,
+			                target: 10,
+			                value: ''
+			            }, {
+			            	source: 9,
+			                target: 10,
+			                value: '脚本'
+			            }, {
+			            	source: 2,
+			                target: 11,
+			                value: ''
+			            }, {
+			            	source: 2,
+			                target: 12,
+			                value: ''
+			            }, {
+			            	source: 2,
+			                target: 13,
+			                value: ''
+			            }, {
+			            	source: 12,
+			                target: 13,
+			                value: 'iOS'
+			            }],
+			            lineStyle: {
+			                normal: {
+			                    opacity: 0.9,
+			                    width: 1,
+			                    curveness: 0
+			                }
+			            }
+				    }]
+				};
+				relationChart.setOption(relationOpt);
+				
+
+
+				/********** 窗口大小改变时，重置报表大小 ********************/
+				window.onresize = function() {
+				relationChart.resize();
+				mapChart.resize();
+				};
+			});
+		</script>
+	</body>
+</html>
