@@ -33,6 +33,7 @@ body.bg06 {background-image:url("../img/bg06.png");}
 	text-align:center;
 	font-size:24px;
 	color:#5dc2fe;
+        display:inline-block;
 }
 @media (max-width: 1199px) {
 	.header {

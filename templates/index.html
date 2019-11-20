@@ -12,7 +12,7 @@
 	
 	<body class="bg06">
 		<header class="header">
-			<h3>水下移动组网示例</h3>
+			<h3 style="display:inline-block;width:100%;text-align:center;margin:0;">水下移动组网示例</h3>
 		</header>
 		
 		<div class="wrapper">
@@ -21,12 +21,38 @@
 					<div class="col-lg-3 fill-h">
 						<div class="xpanel-wrapper xpanel-wrapper-1-2">
 							<div class="xpanel">
-								<div class="fill-h" id="wordChart"></div>
+								<div class="fill-h" id="wordChart" style="overflow-y: scroll;overflow-x: auto;color:white;">
+								<h3  style="display:inline-block;width:100%;text-align:center;margin:0;">实时信息</h3>
+										<script>
+											let ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+											let ws = new WebSocket(ws_scheme + '://' + window.location.host + '/ws/msg/ITNest/');
+
+											ws.onopen = function () {
+												console.log('WebSocket实时消息建立连接');
+											};
+											ws.onmessage = function (e) {
+												console.log('WebSocket实时消息接收消息：');
+												let data = JSON.parse(e.data);
+												console.log(data);
+												var newEle=document.createElement("p");
+												newEle.innerHTML=data.message.content;  
+												var element=document.getElementById("wordChart");
+												element.appendChild(newEle);  
+							                	element.scrollTop=element.scrollHeight;
+											};
+											ws.onclose = function (e) {
+												console.error('WebSocke实时消息关闭连接');
+											};
+										</script>
+
+								</div>
 							</div>
 						</div>
 						<div class="xpanel-wrapper xpanel-wrapper-1-2">
 							<div class="xpanel">
-								<div class="fill-h" id="ballChart"></div>
+								<div class="fill-h" id="ballChart" >
+								<h3  style="display:inline-block;width:100%;text-align:center;margin:0;">实时信息</h3>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -34,6 +60,149 @@
 						<div class="xpanel-wrapper xpanel-wrapper-1">
 							<div class="xpanel no-padding no-bg">
 								<div class="fill-h" id="fireworksChart"></div>
+								<script type="text/javascript" src="/static/js/three.js"></script> 
+								<script type="text/javascript" src="/static/js/OrbitControls.js"></script>
+								<script type="text/javascript" src="/static/js/stats.module.js"></script>
+								<script type="text/javascript" src="/static/js/dat.gui.module.js"></script>
+								<script type="text/javascript" src="/static/js/SVGLoader.js"></script>
+								<script>
+											var renderer, stats, scene, camera, gui, guiData;
+											var group;
+											var auvMarkers = {};
+
+											// 定义 cube, sphere, plane
+											var cubeGeometry = new THREE.BoxGeometry(5,5, 5);
+											var sphereGeometry = new THREE.SphereGeometry(5,5,5);
+											
+											// 材质
+											//	cubeMaterial = new THREE.MeshPhongMaterial({color: '#eaa674', transparent: false, opacity: 1.0});
+											sphereMaterial = new THREE.MeshPhongMaterial({color: '#f2637b', transparent: false, opacity: 1.0});
+											cubeMaterial = new THREE.MeshPhongMaterial({color: '#3aa1ff', transparent: false, opacity: 1.0});
+
+											init();
+											animate();
+
+                                           	let ws_demo = new WebSocket(ws_scheme + '://' + window.location.host + '/ws/msg/demo/');
+											ws_demo.onopen = function () {
+												console.log('WebSocket demo建立连接');
+												console.log(auvMarkers);
+											};
+											ws_demo.onmessage = function (e) {
+												console.log('WebSocket demo接收消息：');
+												let data = JSON.parse(e.data);
+												console.log(data);
+												console.log(auvMarkers);
+												//data.message.content;
+												let item={'type':data.message.type,'did':data.message.did,
+												                    'lx':data.message.lx,'ly':data.message.ly,'lz':data.message.lz}
+											    if($.isEmptyObject(auvMarkers[item.did])) {
+                  										  addAUV(item);
+            								    }  
+												else{
+														auvMarkers[item.did].moveTo(item.lx,item.ly,item.lz);
+												}
+											}
+											ws_demo.onclose = function (e) {
+												console.error('WebSocket demo关闭连接');
+											};
+
+
+											function addAUV(item) {
+												if(item.type='AUV') {
+													var AUV =  new THREE.Mesh(cubeGeometry, cubeMaterial);
+													AUV.position.set(item.lx,item.ly,item.lz);
+													// 显示/隐藏
+													AUV.visible = true;
+													// 保存
+													auvMarkers[item.did] = AUV;
+													// 添加到场景
+													console.log('AUV');
+													group.add(AUV);
+
+													// 绘制历史轨迹
+													//drawHistoryTrack(item.anum);
+												}
+											}
+
+											function init() {
+												console.log('init');
+												var container = document.getElementById( 'fireworksChart' );
+
+												camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 1000 );
+												camera.position.set( 0, 400, 0 );
+												camera.lookAt(0,0,0);
+
+
+												renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true  } );
+												renderer.setPixelRatio( window.devicePixelRatio );
+												renderer.setSize( container.clientWidth, container.clientHeight );
+												container.appendChild( renderer.domElement );
+												
+												var controls = new THREE.OrbitControls( camera, renderer.domElement );
+												controls.screenSpacePanning = true;
+												
+												//stats = new Stats();
+												//container.appendChild( stats.dom );
+
+												
+
+												scene = new THREE.Scene();
+												//scene.background = new THREE.Color( 0xb0b0b0 );
+												var helper = new THREE.GridHelper( 300, 10);
+												helper.rotation.x = 0.5 * Math.PI;//hepler angle
+												helper.position.set(0, 0, 50);
+												scene.add( helper );
+
+												var helpertop = new THREE.GridHelper( 200, 10);
+												helpertop.rotation.x = -0.5 * Math.PI;//hepler angle
+												helpertop.position.set(0, 0, -50);
+												scene.add( helpertop );
+
+												ambientLight = new THREE.AmbientLight(0xffffff);
+												scene.add(ambientLight);
+
+												 //照相机帮助线
+												//cameraHelper = new THREE.CameraHelper(camera);
+												//scene.add(cameraHelper);
+
+												//spotLight = new THREE.SpotLight(0xffffff);
+												//spotLight.position.set(0, 0, 100);
+												//spotLight.castShadow = false;
+												//scene.add(spotLight);
+
+												// 加入一个平面
+												//var groundGeometry = new THREE.PlaneGeometry(100, 100, 100, 100);
+												//var groundMaterial = new THREE.MeshBasicMaterial({color: "#4ecb73"});
+												//ground = new THREE.Mesh(groundGeometry, groundMaterial);
+												//ground.rotation.set(-0.5 * Math.PI, 0, 0); // 沿着 X轴旋转-90°
+												//ground.position.set(0, -100, 0);
+												//scene.add(ground);
+
+
+												group = new THREE.Group();
+                                                scene.add(group);
+
+													cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+													sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+													cube.castShadow = true;
+													sphere.castShadow = true;
+
+													cube.position.set(200,100, -50);
+													sphere.position.set(0, 0, 50);
+													 group.add(cube);
+													 group.add(sphere);
+											
+											}
+
+											function animate() {
+												requestAnimationFrame( animate );
+												render();
+												//stats.update();
+											}
+											function render() {
+												renderer.render( scene, camera );
+											}
+										</script>
 							</div>
 						</div>
 					</div>

@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
+    'channels_example',
 ]
 
 MIDDLEWARE = [
@@ -68,6 +70,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'network_disp.wsgi.application'
+ASGI_APPLICATION = "network_disp.routing.application"
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('localhost', 6379)], #需修改
+        },
+    },
+}
 
 
 # Database
